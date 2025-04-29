@@ -1,5 +1,17 @@
 // script.js
 
+// 0. Display names for all SKUs — edit here to rename items game-wide
+const ITEM_DISPLAY_NAMES = {
+  chips:           "Bánh mì",
+  sodas:           "Bánh bao",
+  toiletries:      "Oreos",
+  coffee:          "Ca Phe Sua",
+  energyDrinks:    "Coconut",
+  organicSnacks:   "Mango",
+  hotDogs:         "Bánh xèo",
+  lotteryTickets:  "Lottery Ticket"
+};
+
 // 1. Store tier definitions
 const STORE_TIERS = [
   { id: 'small',  name: 'Small Store',  cost: 1000, inventoryScale: 0.5 },
@@ -15,80 +27,49 @@ const STORE_LOCATIONS = [
   { id: 'airport',  name: 'Airport',  rent: 20, trafficMod: 2.5, open: 0,  close: 24 }
 ];
 
-// 3. Store‐specific upgrades (including coffee + 4 new SKUs)
+// 3. Store-specific upgrades
 const STORE_UPGRADES = [
-  {
-    id:'automated',
-    name:'Automated Restocker',
-    cost:2000,
-    description:'Auto‐restocks 1 unit/sec.',
-    effect: s => s.upgrades.automated = true
-  },
-  {
-    id:'premiumCoffee',
-    name:'Premium Coffee Machine',
-    cost:500,
-    description:'Unlocks coffee SKU.',
-    effect: s => {
-      s.upgrades.premiumCoffee    = true;
-      s.inventory.coffee          = s.inventory.coffee    || 0;
-      s.purchasePrices.coffee     = s.purchasePrices.coffee || 3.0;
+  { id:'automated',       name:'Automated Restocker',    cost:2000, description:'Auto-restocks 1 unit/sec.',            effect: s => s.upgrades.automated = true },
+  { id:'premiumCoffee',   name:'Ca Phe Lady', cost:500, description:'Unlocks coffee SKU.',                 effect: s => {
+      s.upgrades.premiumCoffee = true;
+      s.inventory.coffee       = s.inventory.coffee       || 0;
+      s.purchasePrices.coffee  = s.purchasePrices.coffee  || 3.0;
     }
   },
-  {
-    id:'energyDrink',
-    name:'Energy Drink Dispenser',
-    cost:1000,
-    description:'Unlocks energy drinks.',
-    effect: s => {
-      s.upgrades.energyDrink           = true;
-      s.inventory.energyDrinks         = s.inventory.energyDrinks       || 0;
-      s.purchasePrices.energyDrinks    = s.purchasePrices.energyDrinks  || 2.0;
+  { id:'energyDrink',     name:'Coconut man', cost:1000, description:'Unlocks energy drinks.',              effect: s => {
+      s.upgrades.energyDrink         = true;
+      s.inventory.energyDrinks       = s.inventory.energyDrinks       || 0;
+      s.purchasePrices.energyDrinks  = s.purchasePrices.energyDrinks  || 2.0;
     }
   },
-  {
-    id:'organicSnacks',
-    name:'Organic Snack Shelf',
-    cost:2000,
-    description:'Unlocks organic snacks.',
-    effect: s => {
-      s.upgrades.organicSnacks          = true;
-      s.inventory.organicSnacks         = s.inventory.organicSnacks      || 0;
-      s.purchasePrices.organicSnacks    = s.purchasePrices.organicSnacks || 1.5;
+  { id:'organicSnacks',   name:'Mango Upgradez',    cost:2000, description:'Unlocks organic snacks.',             effect: s => {
+      s.upgrades.organicSnacks         = true;
+      s.inventory.organicSnacks        = s.inventory.organicSnacks        || 0;
+      s.purchasePrices.organicSnacks   = s.purchasePrices.organicSnacks   || 1.5;
     }
   },
-  {
-    id:'hotDogRoller',
-    name:'Hot Dog Roller',
-    cost:2200,
-    description:'Unlocks hot dogs.',
-    effect: s => {
-      s.upgrades.hotDogRoller        = true;
-      s.inventory.hotDogs            = s.inventory.hotDogs          || 0;
-      s.purchasePrices.hotDogs       = s.purchasePrices.hotDogs     || 1.0;
+  { id:'hotDogRoller',    name:'Bánh Xèo Lady',         cost:2200, description:'Unlocks hot dogs.',                    effect: s => {
+      s.upgrades.hotDogRoller      = true;
+      s.inventory.hotDogs          = s.inventory.hotDogs          || 0;
+      s.purchasePrices.hotDogs     = s.purchasePrices.hotDogs     || 1.0;
     }
   },
-  {
-    id:'lotteryTerminal',
-    name:'Lottery Terminal',
-    cost:4000,
-    description:'Sells lottery tickets.',
-    effect: s => {
-      s.upgrades.lotteryTerminal         = true;
-      s.inventory.lotteryTickets         = s.inventory.lotteryTickets   || 0;
-      s.purchasePrices.lotteryTickets    = s.purchasePrices.lotteryTickets || 1.0;
+  { id:'lotteryTerminal', name:'Lotto Street Seller',       cost:4000, description:'Sells lottery tickets.',               effect: s => {
+      s.upgrades.lotteryTerminal       = true;
+      s.inventory.lotteryTickets       = s.inventory.lotteryTickets       || 0;
+      s.purchasePrices.lotteryTickets  = s.purchasePrices.lotteryTickets  || 1.0;
     }
   }
 ];
 
 // 4. Global upgrades
 const GLOBAL_UPGRADES = [
-  { id:'marketing', name:'Marketing Campaign', cost:1000,  description:'+10% foot traffic.',     effect: g => g.marketing = true },
-  { id:'bulk',      name:'Bulk Purchasing',    cost:3000,  description:'-10% restock cost.',       effect: g => g.bulkPurchase = true },
+  { id:'marketing', name:'Marketing Campaign', cost:1000, description:'+10% foot traffic.',     effect: g => g.marketing = true },
+  { id:'bulk',      name:'Bulk Purchasing',    cost:3000, description:'-10% restock cost.',       effect: g => g.bulkPurchase = true },
   { id:'franchise', name:'Franchise Model',    cost:5000, description:'Unlock extra store slot.', effect: g => g.maxStores++ }
 ];
 
-// 5. Utility
+// 5. Utility to pick random element
 function pickRandom(arr) {
   return arr[Math.floor(Math.random() * arr.length)];
 }
@@ -99,7 +80,7 @@ class Store {
     this.name            = name;
     this.tier            = tier;
     this.location        = location;
-    this.cash            = 2000;
+    this.cash            = 200000;
     const s = tier.inventoryScale;
     this.inventory       = {
       chips:      Math.floor(50 * s),
@@ -124,23 +105,20 @@ class Store {
         `${this.name} paid rent $${this.location.rent} + maintenance $${this.maintenanceCost}.`
       );
     }
-
     // Operating hours
     if (game.hour < this.location.open || game.hour >= this.location.close) {
       return;
     }
-
     // Shoplifting
     const stealChance = this.upgrades.securityCameras ? 0.01 : 0.05;
     if (Math.random() < stealChance) {
       const item = pickRandom(Object.keys(this.inventory));
       if (this.inventory[item] > 0) {
         this.inventory[item]--;
-        game.notify(`${this.name}: shoplifter stole 1 ${item}!`);
+        game.notify(`${this.name}: shoplifter stole 1 ${ITEM_DISPLAY_NAMES[item]}!`);
         this.reputation = Math.max(-100, this.reputation - 1);
       }
     }
-
     // Equipment breakdown
     if (!this.status.brokenMachine && Math.random() < 0.002) {
       this.status.brokenMachine = true;
@@ -148,40 +126,33 @@ class Store {
       this.reputation = Math.max(-100, this.reputation - 2);
     }
     if (this.status.brokenMachine) return;
-
     // Automated restock
     if (this.upgrades.automated) {
-      Object.keys(this.inventory).forEach(item => this.inventory[item]+=1);
+      Object.keys(this.inventory).forEach(item => this.inventory[item]++);
     }
-
-    // Customer simulation using globalPrices
+    // Customers
     let base = (3 + this.staff.cashiers) * this.location.trafficMod;
     if (game.marketing) base *= 1.1;
     if (game.trend && this.inventory[game.trend] > 0) base *= 2;
     base *= 1 + (this.reputation / 100);
-
     const customers = Array.from({ length: Math.floor(base) }, () => ({
       want: (game.trend && Math.random() < 0.5)
         ? game.trend
         : pickRandom(Object.keys(this.inventory))
     }));
-
     let soldTrend = false;
     customers.forEach(c => {
       const item = c.want;
       const sell = game.globalPrices[item] || 0;
       const cost = this.purchasePrices[item] * game.economyFactor;
       const mult = 2.5 + Math.random();
-    // only skip if the sell-price is higher than what customers are willing to pay
-     if (sell > cost * mult) return;
+      if (sell > cost * mult) return;
       if (this.inventory[item] > 0) {
         this.inventory[item]--;
         this.cash += sell;
         if (item === game.trend) soldTrend = true;
       }
     });
-
-    // Reputation update for trend
     if (game.trend) {
       if (soldTrend) this.reputation = Math.min(100, this.reputation + 1);
       else if (this.inventory[game.trend] === 0)
@@ -199,7 +170,6 @@ class Store {
     if (game.bulkPurchase) unitCost *= 0.9;
     const total = qty * unitCost;
     const totalCash = game.stores.reduce((sum, s) => sum + s.cash, 0);
-
     if (totalCash - total < -1000) {
       game.notify("Debt limit reached—cannot restock that much.");
       return;
@@ -222,14 +192,10 @@ class Game {
     this.maxStores     = 1;
     this.marketing     = false;
     this.bulkPurchase  = false;
-    this.globalPrices  = {
-      chips:      1.5,
-      sodas:      2.0,
-      toiletries: 3.5
-    };
-    this.time          = 0;    // in‐game hours
-    this.hour          = 8;    // current hour
-    this.day           = 1;    // current day
+    this.globalPrices  = { chips:1.5, sodas:2.0, toiletries:3.5 };
+    this.time          = 0;    // hours
+    this.hour          = 8;
+    this.day           = 1;
     this.debtStartTime = null;
     this.bankrupt      = false;
   }
@@ -237,28 +203,20 @@ class Game {
   start() {
     document.addEventListener('DOMContentLoaded', () => {
       this.initUI();
-      this.simTimer   = setInterval(() => this.simulate(),    1000);
+      this.simTimer   = setInterval(() => this.simulate(), 1000);
       this.eventTimer = setInterval(() => this.worldEvents(), 30000);
     });
   }
 
- notify(msg) {
-  const c = document.getElementById("notifications");
-  // remove “latest” from any existing notifications
-  Array.from(c.children).forEach(el => el.classList.remove("latest"));
-
-  // create and prepend the new one
-  const el = document.createElement("div");
-  el.className = "notification latest";
-  el.textContent = `[${String(this.hour).padStart(2,'0')}:00] ${msg}`;
-  c.prepend(el);
-
-  // keep only the last 5
-  while (c.children.length > 5) {
-    c.removeChild(c.lastChild);
+  notify(msg) {
+    const c = document.getElementById("notifications");
+    Array.from(c.children).forEach(el => el.classList.remove("latest"));
+    const el = document.createElement("div");
+    el.className   = "notification latest";
+    el.textContent = `[Day ${this.day}, ${String(this.hour).padStart(2,'0')}:00] ${msg}`;
+    c.prepend(el);
+    while (c.children.length > 5) c.removeChild(c.lastChild);
   }
-}
-
 
   gameOver() {
     this.bankrupt = true;
@@ -281,8 +239,8 @@ class Game {
           <span id="current-day">Day: ${this.day}</span>
           <span id="current-hour">Hour: ${this.hour}:00</span>
           <span id="total-profit">Total P/L: $0.00</span>
-       <span id="trend">Trend: None</span>
-       <span id="econ">Economy: ${this.economyFactor.toFixed(2)}</span>
+          <span id="trend">Trend: ${this.trend || "None"}</span>
+          <span id="econ">Economy: ${this.economyFactor.toFixed(2)}</span>
         </div>
       </div>
       <div id="layout">
@@ -290,20 +248,20 @@ class Game {
           <h3>Sell Prices</h3>
           ${Object.keys(this.globalPrices).map(item => `
             <div class="global-price">
-              <label>${item}:</label>
+              <label>${ITEM_DISPLAY_NAMES[item]}:</label>
               <input type="number" step="0.1" id="price-${item}" value="${this.globalPrices[item]}" min="0">
             </div>
           `).join('')}
+          <h3>Global Upgrades</h3>
+          <div id="global-upgrades"></div>
+          <button id="add-store">Open New Store</button>
         </aside>
         <section id="main">
-          <section id="global-upgrades"><h3>Global Upgrades</h3></section>
-          <button id="add-store">Open New Store</button>
           <div id="stores"></div>
         </section>
       </div>
     `;
 
-    // hook global price inputs
     Object.keys(this.globalPrices).forEach(item => {
       document.getElementById(`price-${item}`).oninput = e => {
         const v = parseFloat(e.target.value);
@@ -311,15 +269,7 @@ class Game {
       };
     });
 
-    // global upgrades
-    GLOBAL_UPGRADES.forEach(upg => {
-      const btn = document.createElement("button");
-      btn.id = `upg-global-${upg.id}`;
-      btn.innerText = `${upg.name} ($${upg.cost})`;
-      btn.onclick = () => this.purchaseGlobalUpgrade(upg.id);
-      document.getElementById("global-upgrades").appendChild(btn);
-    });
-
+    this.renderGlobalUpgrades();
     document.getElementById("add-store").onclick = () => this.handleAddStore();
     this.stores.forEach((_, i) => this.addStoreUI(i));
     this.updateUI();
@@ -327,42 +277,95 @@ class Game {
 
   handleAddStore() {
     if (this.bankrupt) return;
-
-    const tierChoice = prompt(
-      'Choose store size:\n' +
-      STORE_TIERS.map((t, i) => `${i+1}. ${t.name} — $${t.cost}`).join('\n') +
-      '\nEnter number:'
-    );
-    const ti = parseInt(tierChoice, 10) - 1;
-    if (isNaN(ti) || ti < 0 || ti >= STORE_TIERS.length) {
-      this.notify('Invalid tier selection.');
+    if (this.stores.length >= this.maxStores) {
+      this.notify("Max stores reached.");
       return;
     }
-    const tier = STORE_TIERS[ti];
+    this.showAddStoreModal();
+  }
 
-    const locChoice = prompt(
-      'Choose location:\n' +
-      STORE_LOCATIONS.map((l, i) => `${i+1}. ${l.name} — rent $${l.rent}/wk`).join('\n') +
-      '\nEnter number:'
-    );
-    const li = parseInt(locChoice, 10) - 1;
-    if (isNaN(li) || li < 0 || li >= STORE_LOCATIONS.length) {
-      this.notify('Invalid location selection.');
-      return;
-    }
-    const loc = STORE_LOCATIONS[li];
+  // —— Modal flow for adding a store ——
+  showAddStoreModal() {
+    const overlay = document.createElement('div');
+    overlay.id = 'modal-overlay';
+    Object.assign(overlay.style, {
+      position:'fixed', top:0, left:0, right:0, bottom:0,
+      background:'rgba(0,0,0,0.5)',
+      display:'flex', alignItems:'center', justifyContent:'center',
+      zIndex:2000
+    });
+    const modal = document.createElement('div');
+    modal.id = 'modal';
+    Object.assign(modal.style, {
+      background:'#fff', padding:'1rem', borderRadius:'8px',
+      maxWidth:'90%', width:'300px', boxSizing:'border-box'
+    });
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    this.buildTierSelection(modal);
+  }
 
-    const totalCash = this.stores.reduce((sum, s) => sum + s.cash, 0);
+  buildTierSelection(modal) {
+    modal.innerHTML = `<h3>Select Store Size</h3>`;
+    STORE_TIERS.forEach((tier,i) => {
+      const btn = document.createElement('button');
+      btn.textContent = `${tier.name} ($${tier.cost})`;
+      Object.assign(btn.style, { display:'block', width:'100%', margin:'0.5rem 0' });
+      btn.onclick = () => {
+        this._selectedTier = i;
+        this.buildLocationSelection(modal);
+      };
+      modal.appendChild(btn);
+    });
+    const cancel = document.createElement('button');
+    cancel.textContent = 'Cancel';
+    Object.assign(cancel.style, { display:'block', width:'100%', marginTop:'1rem', background:'#ccc' });
+    cancel.onclick = () => this.hideModal();
+    modal.appendChild(cancel);
+  }
+
+  buildLocationSelection(modal) {
+    modal.innerHTML = `<h3>Select Location</h3>`;
+    STORE_LOCATIONS.forEach((loc,i) => {
+      const btn = document.createElement('button');
+      btn.textContent = `${loc.name} (rent $${loc.rent}/wk)`;
+      Object.assign(btn.style, { display:'block', width:'100%', margin:'0.5rem 0' });
+      btn.onclick = () => {
+        this._selectedLoc = i;
+        this.confirmAddStore();
+      };
+      modal.appendChild(btn);
+    });
+    const back = document.createElement('button');
+    back.textContent = 'Back';
+    Object.assign(back.style, { display:'block', width:'100%', marginTop:'1rem', background:'#ccc' });
+    back.onclick = () => this.buildTierSelection(modal);
+    modal.appendChild(back);
+  }
+
+  confirmAddStore() {
+    const tier = STORE_TIERS[this._selectedTier];
+    const loc  = STORE_LOCATIONS[this._selectedLoc];
+    const totalCash = this.stores.reduce((sum,s) => sum + s.cash, 0);
     if (totalCash < tier.cost) {
       this.notify(`Need $${tier.cost}, have $${totalCash.toFixed(2)}.`);
+      this.hideModal();
       return;
     }
     this.stores[0].cash -= tier.cost;
     this.notify(`Opened ${tier.name} in ${loc.name} for $${tier.cost}.`);
     const name = prompt('Name your store:', `${loc.name} Branch`);
-    this.stores.push(new Store(name || loc.name, tier, loc));
-    this.initUI();
+    this.stores.push(new Store(name||loc.name, tier, loc));
+    this.addStoreUI(this.stores.length - 1);
+    this.updateUI();
+    this.hideModal();
   }
+
+  hideModal() {
+    const ov = document.getElementById('modal-overlay');
+    if (ov) ov.remove();
+  }
+  // —— end modal flow ——
 
   purchaseGlobalUpgrade(id) {
     if (this.bankrupt) return;
@@ -372,7 +375,8 @@ class Game {
       payer.cash -= upg.cost;
       upg.effect(this);
       this.notify(`Purchased global upgrade: ${upg.name}`);
-      this.initUI();
+      this.renderGlobalUpgrades();
+      this.updateUI();
     } else {
       this.notify("Cannot purchase upgrade.");
     }
@@ -382,6 +386,7 @@ class Game {
     const s  = this.stores[idx];
     const sd = document.getElementById("stores");
     const card = document.createElement("div");
+    card.id = `store-${idx}`;
     card.className = "store-card";
     card.innerHTML = `
       <h3>${s.name} (${s.tier.name}, ${s.location.name})</h3>
@@ -389,11 +394,14 @@ class Game {
       <p>Status: <span id="status-${idx}">Operational</span></p>
       <button id="fix-${idx}">Fix Machine</button>
       <h4>Items & Restock</h4>
+      <div class="item-row header">
+        <span>Item</span><span>Inv</span><span>Cost</span><span>Qty</span><span>Action</span>
+      </div>
       ${Object.keys(s.inventory).map(item => `
         <div class="item-row">
-          <span>${item}</span>
-          <span>Inv: <span id="inv-${idx}-${item}">${s.inventory[item]}</span></span>
-          <span>Cost: $<span id="pp-${idx}-${item}">${
+          <span>${ITEM_DISPLAY_NAMES[item]}</span>
+          <span><span id="inv-${idx}-${item}">${s.inventory[item]}</span></span>
+          <span>$<span id="pp-${idx}-${item}">${
             (s.purchasePrices[item] * this.economyFactor * (this.bulkPurchase ? 0.9 : 1)).toFixed(2)
           }</span></span>
           <input type="number" id="restock-${idx}-${item}" value="0" min="0">
@@ -405,7 +413,9 @@ class Game {
     sd.appendChild(card);
 
     document.getElementById(`fix-${idx}`).onclick = () => {
-      s.fixMachine(); this.notify(`${s.name} equipment fixed.`);
+      s.fixMachine();
+      this.notify(`${s.name} equipment fixed.`);
+      this.updateUI();
     };
 
     Object.keys(s.inventory).forEach(item => {
@@ -424,23 +434,22 @@ class Game {
         if (!s.upgrades[upg.id] && s.cash >= upg.cost) {
           s.cash -= upg.cost;
           upg.effect(s);
-
-          // if SKU unlock, seed sidebar price
           const skuMap = {
-            premiumCoffee:    'coffee',
-            energyDrink:      'energyDrinks',
-            organicSnacks:    'organicSnacks',
-            hotDogRoller:     'hotDogs',
-            lotteryTerminal:  'lotteryTickets'
+            premiumCoffee:   'coffee',
+            energyDrink:     'energyDrinks',
+            organicSnacks:   'organicSnacks',
+            hotDogRoller:    'hotDogs',
+            lotteryTerminal: 'lotteryTickets'
           };
           const sku = skuMap[upg.id];
           if (sku) {
             const defaultSell = (s.purchasePrices[sku] || 1) * 2;
             this.globalPrices[sku] = this.globalPrices[sku] || defaultSell;
           }
-
           this.notify(`${s.name} purchased: ${upg.name}`);
-          this.initUI();
+          this.renderGlobalUpgrades();
+          this.renderStoreUI(idx);
+          this.updateUI();
         } else {
           this.notify("Cannot purchase store upgrade.");
         }
@@ -458,9 +467,8 @@ class Game {
       document.getElementById("current-day").textContent = `Day: ${this.day}`;
     }
     document.getElementById("current-hour").textContent = `Hour: ${this.hour}:00`;
-	// in worldEvents() or updateUI() when econ/trend change:
-document.getElementById("trend").textContent = `Trend: ${this.trend || "None"}`;
-document.getElementById("econ").textContent  = `Economy: ${this.economyFactor.toFixed(2)}`;
+    document.getElementById("trend").textContent = `Trend: ${this.trend || "None"}`;
+    document.getElementById("econ").textContent  = `Economy: ${this.economyFactor.toFixed(2)}`;
     this.stores.forEach(s => s.simulateTick(this));
     this.checkDebt();
     this.updateUI();
@@ -470,16 +478,17 @@ document.getElementById("econ").textContent  = `Economy: ${this.economyFactor.to
     if (this.bankrupt) return;
     if (Math.random() < 0.3) {
       this.trend = pickRandom(Object.keys(this.stores[0].inventory));
-      this.notify(`Trend Alert: ${this.trend}!`);
+      game.notify(`Trend Alert: ${ITEM_DISPLAY_NAMES[this.trend]}!`);
     }
     if (Math.random() < 0.1) {
-      this.economyFactor = Math.max(0.5,
+      this.economyFactor = Math.max(
+        0.5,
         this.economyFactor + (Math.random() * 0.4 - 0.2)
       );
       this.notify(`Economy factor: ${this.economyFactor.toFixed(2)}`);
     }
-    document.getElementById("trend").textContent = this.trend || "None";
-    document.getElementById("econ").textContent  = this.economyFactor.toFixed(2);
+    document.getElementById("trend").textContent = `Trend: ${this.trend ? ITEM_DISPLAY_NAMES[this.trend] : "None"}`;
+    document.getElementById("econ").textContent  = `Economy: ${this.economyFactor.toFixed(2)}`;
   }
 
   checkDebt() {
@@ -492,10 +501,7 @@ document.getElementById("econ").textContent  = `Economy: ${this.economyFactor.to
       this.debtStartTime = null;
       this.notify("Debt cleared.");
     }
-    if (
-      this.debtStartTime !== null &&
-      this.time - this.debtStartTime >= 24
-    ) {
+    if (this.debtStartTime !== null && this.time - this.debtStartTime >= 24) {
       this.gameOver();
     }
   }
@@ -505,9 +511,9 @@ document.getElementById("econ").textContent  = `Economy: ${this.economyFactor.to
       const cashEl = document.getElementById(`cash-${idx}`);
       const statEl = document.getElementById(`status-${idx}`);
       const fixBtn = document.getElementById(`fix-${idx}`);
-      if (cashEl) cashEl.textContent   = s.cash.toFixed(2);
-      if (statEl) statEl.textContent   = s.status.brokenMachine ? "Broken" : "Operational";
-      if (fixBtn) fixBtn.disabled       = !s.status.brokenMachine;
+      if (cashEl) cashEl.textContent = s.cash.toFixed(2);
+      if (statEl) statEl.textContent = s.status.brokenMachine ? "Broken" : "Operational";
+      if (fixBtn) fixBtn.disabled = !s.status.brokenMachine;
 
       Object.keys(s.inventory).forEach(item => {
         const invEl = document.getElementById(`inv-${idx}-${item}`);
@@ -537,6 +543,25 @@ document.getElementById("econ").textContent  = `Economy: ${this.economyFactor.to
 
     const addBtn = document.getElementById("add-store");
     if (addBtn) addBtn.disabled = this.stores.length >= this.maxStores || this.bankrupt;
+  }
+
+  renderGlobalUpgrades() {
+    const container = document.getElementById("global-upgrades");
+    container.innerHTML = "";
+    GLOBAL_UPGRADES.forEach(upg => {
+      const btn = document.createElement("button");
+      btn.id = `upg-global-${upg.id}`;
+      btn.innerText = `${upg.name} ($${upg.cost})`;
+      btn.onclick = () => this.purchaseGlobalUpgrade(upg.id);
+      btn.disabled = this.stores[0].cash < upg.cost || this[upg.id];
+      container.appendChild(btn);
+    });
+  }
+
+  renderStoreUI(idx) {
+    const old = document.getElementById(`store-${idx}`);
+    if (old) old.remove();
+    this.addStoreUI(idx);
   }
 }
 
