@@ -1,0 +1,186 @@
+/* Base styles */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  font-family: sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+}
+#game-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0; /* header/title handle their own padding */
+}
+
+/* Game title banner */
+#game-title {
+  background-color: #4CAF50;
+  color: white;
+  text-align: center;
+  margin: 0;
+  padding: 1rem 0;
+  font-size: 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Sticky header beneath title */
+#header {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  color: #333;
+  z-index: 1000;
+  padding: 0.5rem 1rem;
+  border-bottom: 1px solid #ddd;
+}
+
+/* Notifications banner */
+#notifications {
+  background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  max-height: 3rem;
+  overflow-y: auto;
+  padding: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: #2e7d32;
+  font-size: 0.9rem;
+}
+.notification {
+  margin-bottom: 0.3rem;
+}
+.notification.latest {
+  font-weight: bold;
+    font-size: 1rem;
+
+}
+
+/* Status bar (day/hour/total P/L) */
+#status-bar {
+  display: flex;
+ background: #e8f5e9;
+  border: 1px solid #c8e6c9;
+  flex-wrap: wrap;      /* allow multiple items on one line */
+  gap: 1rem;
+  font-weight: bold;
+  font-size: 1.5rem;
+  align-items: center;
+  
+}
+#status-bar span {
+  white-space: wrap;  /* prevent unwanted wrapping in middle of a label */
+}
+
+
+/* Layout grid: sidebar + main */
+#layout {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 1rem;
+  margin: 1rem;
+}
+
+/* —— NEW: make sidebar sticky & scrollable —— */
+#sidebar {
+  position: sticky;
+  top: calc( /* height of #game-title + height of #header */ 8rem + 2.5rem + 2px );
+  /* 
+    1rem (margin-top of layout)
+    + 2.5rem (approx combined padding of title+header)
+    + 2px (borders)
+    adjust as needed to exactly clear your header area
+  */
+  align-self: start;
+  max-height: calc(100vh - (8rem + 2.5rem + 2px));
+  overflow-y: auto;
+
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  padding: 1rem;
+}
+
+/* Global price controls */
+.global-price {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.global-price input {
+  width: 4rem;
+  padding: 0.2rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Main area */
+#main {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Global upgrades panel */
+#global-upgrades {
+  margin-bottom: 1rem;
+}
+#global-upgrades button {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Buttons */
+button {
+  padding: 0.5rem 1rem;
+  margin: 0.3rem 0;
+  border: none;
+  background-color: #2196F3;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+button:disabled {
+  background-color: #ccc;
+  cursor: not-allowed;
+}
+
+/* Stores grid */
+#stores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+/* Store card styling */
+.store-card {
+  background-color: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+.store-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1.2rem;
+}
+
+/* Item & Restock rows aligned */
+.item-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto auto;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.item-row input[type="number"] {
+  width: 4rem;
+  padding: 0.2rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Store upgrades section */
+.store-card > div[id^="upgrades-"] {
+  margin-top: 1rem;
+}
