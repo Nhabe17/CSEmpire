@@ -80,7 +80,7 @@ class Store {
     this.name            = name;
     this.tier            = tier;
     this.location        = location;
-    this.cash            = 200000;
+    this.cash            = 5000;
     const s = tier.inventoryScale;
     this.inventory       = {
       chips:      Math.floor(50 * s),
