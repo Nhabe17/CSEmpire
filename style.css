@@ -163,24 +163,36 @@ button:disabled {
 .store-card h3 {
   margin: 0 0 0.5rem;
   font-size: 1.2rem;
+
 }
 
 /* Item & Restock rows aligned */
+.item-row.header {
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+  margin-bottom: 1rem;
+  
+}
+
+/* ensure header aligns exactly like data rows */
+.item-row.header span {
+	  font-size: 1.2rem;
+	  
+
+  /* same grid columns as .item-row */
+}
+
+/* your existing .item-row grid */
 .item-row {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr auto auto;
+  grid-template-columns: 2fr 1fr 1fr 1fr auto;
   align-items: center;
   gap: 0.5rem;
   margin-bottom: 0.5rem;
-}
-.item-row input[type="number"] {
-  width: 4rem;
-  padding: 0.2rem;
-  border: 1px solid #ccc;
-  border-radius: 4px;
 }
 
 /* Store upgrades section */
 .store-card > div[id^="upgrades-"] {
   margin-top: 1rem;
+
 }
